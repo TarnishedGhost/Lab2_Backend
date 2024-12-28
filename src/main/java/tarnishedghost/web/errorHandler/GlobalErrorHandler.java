@@ -1,7 +1,6 @@
 package tarnishedghost.web.errorHandler;
 
 import tarnishedghost.service.errorHandler.CategoryNotFoundException;
-import tarnishedghost.service.errorHandler.CategoryNotFoundException;
 import tarnishedghost.service.errorHandler.InvalidArgumentsException;
 import tarnishedghost.service.errorHandler.RecordNotFoundException;
 import tarnishedghost.service.errorHandler.UserNotFoundException;
@@ -16,7 +15,7 @@ import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @ControllerAdvice
-public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
+public class GlobalErrorHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(UserNotFoundException.class)
     ProblemDetail handleUserNotFound(UserNotFoundException ex) {

@@ -1,11 +1,11 @@
 package tarnishedghost.service;
 
-import tarnishedghost.service.exception.InvalidArgumentsException;
-import tarnishedghost.service.exception.RecordNotFoundException;
+import tarnishedghost.service.errorHandler.InvalidArgumentsException;
+import tarnishedghost.service.errorHandler.RecordNotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Service;
-import tarnishedghost.entity.Record;
+import tarnishedghost.structure.Record;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
