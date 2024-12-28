@@ -1,4 +1,5 @@
 package tarnishedghost.service;
+
 import tarnishedghost.structure.User;
 import tarnishedghost.service.errorHandler.UserNotFound;
 import lombok.AllArgsConstructor;
