@@ -1,6 +1,7 @@
 package tarnishedghost.web.errorHandler;
 
 import tarnishedghost.service.errorHandler.CategoryNotFoundException;
+import tarnishedghost.service.errorHandler.CategoryNotFoundException;
 import tarnishedghost.service.errorHandler.InvalidArgumentsException;
 import tarnishedghost.service.errorHandler.RecordNotFoundException;
 import tarnishedghost.service.errorHandler.UserNotFoundException;

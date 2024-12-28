@@ -2,7 +2,6 @@ package tarnishedghost.service;
 import tarnishedghost.structure.User;
 import tarnishedghost.service.errorHandler.UserNotFound;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.HashMap;
@@ -33,9 +32,7 @@ public class UserService {
         return List.copyOf(users.values());
     }
     public void deleteUser(UUID id) {
-        if (!users.containsKey(id)) {
-            throw new UserNotFoundException(id);
-        }
-        users.remove(id);
+        User user = getUserById(id);
+        users.remove(user.getId());
     }
 }
