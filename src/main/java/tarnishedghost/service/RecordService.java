@@ -1,56 +1,73 @@
 package tarnishedghost.service;
 
+import tarnishedghost.domain.Record;
+import tarnishedghost.structure.RecordEntity;
+import tarnishedghost.repo.CategoryRepository;
+import tarnishedghost.repo.RecordRepository;
+import tarnishedghost.repo.UserRepository;
+import tarnishedghost.service.errorHandler.CategoryNotFoundException;
 import tarnishedghost.service.errorHandler.InvalidArgumentsException;
 import tarnishedghost.service.errorHandler.RecordNotFoundException;
+import tarnishedghost.service.errorHandler.UserNotFoundException;
+import tarnishedghost.service.mapper.RecordMapper;
+import jakarta.persistence.PersistenceException;
 import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Service;
-import tarnishedghost.structure.Record;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.util.HashMap;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
-@NoArgsConstructor
 public class RecordService {
-    private Map<UUID, Record> records = new HashMap<>();
+    private final RecordRepository recordRepository;
+    private final UserRepository userRepository;
+    private final CategoryRepository categoryRepository;
+    private final RecordMapper recordMapper;
 
+    @Transactional(readOnly = true)
     public Record getRecordById(UUID id) {
-        if (!records.containsKey(id)) {
-            throw new RecordNotFoundException(id);
+        try {
+            return recordMapper.toRecord(recordRepository.findById(id).orElseThrow(() -> new RecordNotFoundException(id)));
+        } catch (Exception e) {
+            throw new PersistenceException(e);
         }
-        return records.get(id);
     }
 
+    @Transactional
     public Record addRecord(Record record) {
-        Record newRecord = Record.builder()
-                .id(UUID.randomUUID())
-                .userId(record.getUserId())
-                .categoryId(record.getCategoryId())
-                .date(record.getDate() != null ? record.getDate() : ZonedDateTime.now(ZoneId.of("Europe/Kiev")))
-                .expense(record.getExpense())
-                .build();
-        records.put(newRecord.getId(), newRecord);
-        return newRecord;
+        try {
+            RecordEntity recordEntity = recordMapper.toRecordEntity(record);
+            UUID userId = recordEntity.getUser().getId();
+            UUID categoryId = recordEntity.getCategory().getId();
+            userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
+            categoryRepository.findById(categoryId).orElseThrow(() -> new CategoryNotFoundException(categoryId));
+
+            return recordMapper.toRecord(recordRepository.save(recordMapper.toRecordEntity(record)));
+        } catch (Exception e) {
+            throw new PersistenceException(e);
+        }
     }
 
+    @Transactional
     public void deleteRecordById(UUID id) {
-        Record record = getRecordById(id);
-        records.remove(record.getId());
+        try {
+            recordRepository.deleteById(id);
+        } catch (Exception e) {
+            throw new PersistenceException(e);
+        }
     }
 
-    public List<Record> getRecords(String userId, String categoryId) {
+    @Transactional(readOnly = true)
+    public List<Record> getRecords(UUID userId, UUID categoryId) {
         if (userId == null && categoryId == null) {
             throw new InvalidArgumentsException("Either userId or categoryId must be provided");
+        } else if (userId == null) {
+            categoryRepository.findById(categoryId).orElseThrow(() -> new CategoryNotFoundException(categoryId));
+        } else {
+            userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
         }
-        return records.values().stream()
-                .filter(record -> (userId == null || record.getUserId().equals(userId)) &&
-                        (categoryId == null || record.getCategoryId().equals(categoryId)))
-                .collect(Collectors.toList());
+        return recordMapper.toRecordList(recordRepository.findByUserIdAndCategoryId(userId, categoryId));
     }
 }

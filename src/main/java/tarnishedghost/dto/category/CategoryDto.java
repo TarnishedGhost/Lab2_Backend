@@ -1,5 +1,6 @@
 package tarnishedghost.dto.category;
 
+import tarnishedghost.dto.record.RecordDto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
