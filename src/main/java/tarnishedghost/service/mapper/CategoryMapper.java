@@ -20,7 +20,7 @@ public interface CategoryMapper {
     Category toCategory(CategoryEntity categoryEntity);
 
     @Mapping(target = "id", ignore = true)
-    @Mapping(source = "userId", target = "userId")
+    @Mapping(target = "userId", ignore = true)
     @Mapping(source = "categoryName", target = "categoryName")
     @Mapping(source = "isPublic", target = "isPublic")
     @Mapping(source = "records", target = "records")
@@ -33,7 +33,6 @@ public interface CategoryMapper {
     @Mapping(source = "records", target = "records")
     CategoryEntity toCategoryEntity(Category category);
 
-    @Mapping(source = "userId", target = "userId")
     @Mapping(source = "categoryName", target = "categoryName")
     @Mapping(source = "isPublic", target = "isPublic")
     @Mapping(source = "records", target = "records")

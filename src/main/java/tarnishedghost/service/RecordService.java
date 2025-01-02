@@ -5,16 +5,17 @@ import tarnishedghost.structure.RecordEntity;
 import tarnishedghost.repo.CategoryRepository;
 import tarnishedghost.repo.RecordRepository;
 import tarnishedghost.repo.UserRepository;
-import tarnishedghost.service.errorHandler.CategoryNotFoundException;
-import tarnishedghost.service.errorHandler.InvalidArgumentsException;
-import tarnishedghost.service.errorHandler.RecordNotFoundException;
-import tarnishedghost.service.errorHandler.UserNotFoundException;
+import tarnishedghost.service.errorHandler.*;
 import tarnishedghost.service.mapper.RecordMapper;
 import jakarta.persistence.PersistenceException;
 import lombok.AllArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -28,32 +29,37 @@ public class RecordService {
 
     @Transactional(readOnly = true)
     public Record getRecordById(UUID id) {
-        try {
-            return recordMapper.toRecord(recordRepository.findById(id).orElseThrow(() -> new RecordNotFoundException(id)));
-        } catch (Exception e) {
-            throw new PersistenceException(e);
-        }
+        return recordMapper.toRecord(recordRepository.findById(id).orElseThrow(() -> new RecordNotFoundException(id)));
     }
 
     @Transactional
     public Record addRecord(Record record) {
-        try {
-            RecordEntity recordEntity = recordMapper.toRecordEntity(record);
-            UUID userId = recordEntity.getUser().getId();
-            UUID categoryId = recordEntity.getCategory().getId();
-            userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
-            categoryRepository.findById(categoryId).orElseThrow(() -> new CategoryNotFoundException(categoryId));
-
-            return recordMapper.toRecord(recordRepository.save(recordMapper.toRecordEntity(record)));
-        } catch (Exception e) {
-            throw new PersistenceException(e);
-        }
+        RecordEntity recordEntity = recordMapper.toRecordEntity(record);
+        UUID userId = getCurrentUser();
+        UUID categoryId = recordEntity.getCategory().getId();
+        record = Record.builder()
+                .userId(userId)
+                .categoryId(record.getCategoryId())
+                .expense(record.getExpense())
+                .date(ZonedDateTime.now(ZoneId.of("Europe/Kiev")))
+                .build();
+        categoryRepository.findById(categoryId).orElseThrow(() -> new CategoryNotFoundException(categoryId));
+        return recordMapper.toRecord(recordRepository.save(recordMapper.toRecordEntity(record)));
     }
 
     @Transactional
     public void deleteRecordById(UUID id) {
         try {
+            boolean isExist = recordRepository.existsById(id);
+            if (!isExist) {
+                return;
+            }
+            if (!doesHaveRights(id)) {
+                throw new ForbiddenException();
+            }
             recordRepository.deleteById(id);
+        } catch (ForbiddenException e) {
+            throw new ForbiddenException();
         } catch (Exception e) {
             throw new PersistenceException(e);
         }
@@ -69,5 +75,19 @@ public class RecordService {
             userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
         }
         return recordMapper.toRecordList(recordRepository.findByUserIdAndCategoryId(userId, categoryId));
+    }
+
+    private UUID getCurrentUser() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String email = auth.getName();
+        return userRepository.findByEmail(email).get().getId();
+    }
+
+    private boolean doesHaveRights(UUID id) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String email = auth.getName();
+        UUID currentUserId = userRepository.findByEmail(email).get().getId();
+        UUID userId = userRepository.findUserIdByRecordId(id);
+        return userId.equals(currentUserId);
     }
 }
