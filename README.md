@@ -1,4 +1,4 @@
-# Лабораторна робота №3
+# Лабораторна робота №4
 
 ### Варіант 2: Користувацькі категорії витрат
 
@@ -13,13 +13,9 @@
 ```
 https://github.com/TarnishedGhost/Lab2_Backend.git
 ```
-2. Create image:
+2. Create image and launch docker:
 ```
-docker build -t tarnishedghost .
-```
-3. Launch Docker:
-```
-docker-compose up
+docker-compose up --build
 ```
 Project will be available via link: [http://localhost:8080/api/v1](http://localhost:8080/api/v1)
 
