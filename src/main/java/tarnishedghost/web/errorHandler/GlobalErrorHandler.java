@@ -1,4 +1,4 @@
-package tarnishedghost.web.errorHandler.;
+package tarnishedghost.web.errorHandler;
 
 import tarnishedghost.service.errorHandler.*;
 import jakarta.persistence.PersistenceException;

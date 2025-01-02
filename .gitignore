@@ -4,10 +4,6 @@ build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
-*.jar
-*.war
-*.ear
-application-config.properties
 
 ### STS ###
 .apt_generated
@@ -29,6 +25,13 @@ bin/
 out/
 !**/src/main/**/out/
 !**/src/test/**/out/
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
 
 ### VS Code ###
 .vscode/
